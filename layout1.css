@@ -1,0 +1,41 @@
+ #a0{
+position: absolute; 
+width: 800px; 
+height: 800px;
+left: 0px;
+top: 0px;
+padding: 3px;
+color: red;
+ border: 3px;
+}
+#a1{
+position: absolute; 
+width: 736px; 
+height: 90px;
+left: 28px;
+top: 26px;
+padding: 3px;
+color: white;
+ border: 3px;
+}
+#a2{
+position: absolute; 
+width: 789px; 
+height: 576px;
+left: 53px;
+top: 530px;
+padding: 30px;
+color: gray;
+ border: 3px;
+}
+#a3{
+position: absolute; 
+width: 89px; 
+height: 35px;
+left: 27px;
+top: 153px;
+padding: 3px;
+color: red;
+ border: 3px;
+}
+

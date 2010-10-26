@@ -1,0 +1,69 @@
+BODY {
+	background-color: #1b0f00;
+	font-family: arial;
+	background-repeat: no-repeat;
+	color: white;
+	margin: 0px;
+}
+H1 {
+	color: olive;
+	font-size: 60px;
+	padding: 3px;
+	padding-left: 14px;
+}
+H2 {
+	font-size: 16px;
+}
+H3{
+	color: #636363;
+	font-size: 20px;
+	text-align: justify;
+}
+#logo{
+	position: absolute;
+	top: 55px;
+	left: 70px;
+}
+#kuva{
+	position: absolute;
+	top: 150px;
+	left: 50px;
+	width: 400px;
+}
+#lista{
+	position: absolute;
+	top: 440px;
+	left: 70px;
+	width: 400px;
+	font-size: 16px;
+}
+#menu{
+	position: absolute;
+	top: 50px;
+	left: 50px;
+}
+#keramiikasta{
+	position: absolute;
+	top: 150px;
+	left: 500px;
+	width: 360px;
+}
+
+img{
+	border: 0px;
+}
+form{
+	padding-left: 42px;
+}
+A:link {
+   color: #F1FFF9;
+   font-weight:bold;
+}
+A:visited {
+   color: #F1FFF9;
+}
+A:active {   color: #F1FFF9;
+	}
+A:hover {   color: #F1FFF9;
+	 font-weight:bold;}
+	 
