@@ -1,0 +1,16 @@
+- open image
+- analyse image and get objects (horizontal line, vertical line, blobs)
+- calculate golden section points for the picture
+- can move lines to golden section points
+- can move blobs center or golden points to golden section points
+- can scale blobs to 
+
+- select rectangle, select side and drag to next line or outside the image
+
+resize
+- avaa kuva
+- hakee objektit
+- mittasuhteet voi muuttaa kuutioksi tai kultaisiksi suhteiksi
+- blobit liikkuu l‰himp‰‰n leikkaukseen automatic?
+
+

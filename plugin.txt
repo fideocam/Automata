@@ -1,0 +1,16 @@
+alue: reunojen tai lähimpien guidien sisällä
+
+- resize object to fit area
+- create guides inside the object bounds
+- create golden guides for document
+
+- skaalaa objekti oikeisiin mittasuhteisiin
+* keskipiste määrittää sijoitussuorakaiteen
+* mittasuhteet taulusta: lähin mittasuhde joka käytössä
+
+- skaalaa objekti dokumenttiin
+
+- luo objektin sisällä guidet
+
+- luo guidet olemassa olevien guidien muodostaman suorakaiteen sisään
+* oisko parempi jos pystyisi myös valitsemaan halutessaan tietyt guidet ja laskea uudet niiden muodostaman suorakaiteen perusteella

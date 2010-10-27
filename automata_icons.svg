@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://inkscape.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.42"
+   sodipodi:docbase="C:\Documents and Settings\Raino\Skrivbord"
+   sodipodi:docname="automata_icons.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.70000000"
+     inkscape:cx="375.00000"
+     inkscape:cy="484.09219"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     inkscape:window-width="954"
+     inkscape:window-height="894"
+     inkscape:window-x="244"
+     inkscape:window-y="67" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       sodipodi:type="arc"
+       style="fill:#ffe100;fill-opacity:0.75000000;fill-rule:evenodd;stroke:none;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000"
+       id="path1312"
+       sodipodi:cx="175.71428"
+       sodipodi:cy="332.36218"
+       sodipodi:rx="127.14286"
+       sodipodi:ry="117.14286"
+       d="M 302.85714 332.36218 A 127.14286 117.14286 0 1 1  48.571419,332.36218 A 127.14286 117.14286 0 1 1  302.85714 332.36218 z"
+       transform="matrix(0.979294,0.000000,0.000000,1.062585,-10.43325,-208.1632)"
+       inkscape:export-filename="C:\Documents and Settings\Raino\Skrivbord\draw.gif"
+       inkscape:export-xdpi="10.840000"
+       inkscape:export-ydpi="10.840000" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#ffffff;fill-opacity:1.0000000;fill-rule:evenodd;stroke:none;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000"
+       id="path2041"
+       sodipodi:cx="175.71428"
+       sodipodi:cy="332.36218"
+       sodipodi:rx="127.14286"
+       sodipodi:ry="117.14286"
+       d="M 302.85714 332.36218 A 127.14286 117.14286 0 1 1  48.571419,332.36218 A 127.14286 117.14286 0 1 1  302.85714 332.36218 z"
+       transform="matrix(0.786595,0.000000,0.000000,0.857713,22.99794,-140.1387)"
+       inkscape:export-filename="C:\Documents and Settings\Raino\Skrivbord\draw.gif"
+       inkscape:export-xdpi="10.840000"
+       inkscape:export-ydpi="10.840000" />
+    <path
+       style="fill:#ffe940;fill-opacity:1.0000000;fill-rule:evenodd;stroke:none;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000"
+       d="M 202.59261,88.489366 C 175.75034,101.62513 136.86583,154.64996 135.19975,160.76245 C 133.05371,168.63580 132.85492,172.83603 126.90524,176.92880 C 122.24480,180.13470 116.68947,183.44579 112.38986,187.38938 C 111.16797,188.51010 109.62503,189.29130 108.24261,190.24226 C 105.28772,192.27492 101.66870,200.09612 100.98492,202.60476 C 98.269531,212.56694 100.66427,208.89872 104.09535,202.60476 C 105.91804,199.26124 120.57837,200.48940 123.79481,199.75188 C 131.21585,198.05024 132.30292,173.53720 141.42063,175.02688 C 155.48672,177.32503 219.18162,115.63204 219.18162,87.538409 C 219.18162,84.531204 228.44668,73.439867 202.59261,88.489366 z "
+       id="path2769"
+       sodipodi:nodetypes="csssssssssc"
+       inkscape:export-filename="C:\Documents and Settings\Raino\Skrivbord\draw.gif"
+       inkscape:export-xdpi="10.840000"
+       inkscape:export-ydpi="10.840000" />
+    <text
+       xml:space="preserve"
+       style="font-size:56.960499px;font-style:normal;font-weight:normal;fill:#ffe940;fill-opacity:1.0000000;stroke:none;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000;font-family:Bitstream Vera Sans"
+       x="298.67749"
+       y="122.66393"
+       id="text3497"
+       transform="scale(1.200979,0.832654)"><tspan
+         sodipodi:role="line"
+         id="tspan3499"
+         x="298.67749"
+         y="122.66393">draw</tspan><tspan
+         sodipodi:role="line"
+         x="298.67749"
+         y="193.86456"
+         id="tspan3501">select</tspan><tspan
+         sodipodi:role="line"
+         x="298.67749"
+         y="265.06518"
+         id="tspan3503">guide</tspan><tspan
+         sodipodi:role="line"
+         x="298.67749"
+         y="336.26580"
+         id="tspan3505">fill</tspan><tspan
+         sodipodi:role="line"
+         x="298.67749"
+         y="407.46643"
+         id="tspan3507">image</tspan></text>
+    <path
+       sodipodi:type="arc"
+       style="fill:#ffe100;fill-opacity:0.75000000;fill-rule:evenodd;stroke:none;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000"
+       id="path3509"
+       sodipodi:cx="175.71428"
+       sodipodi:cy="332.36218"
+       sodipodi:rx="127.14286"
+       sodipodi:ry="117.14286"
+       d="M 302.85714 332.36218 A 127.14286 117.14286 0 1 1  48.571419,332.36218 A 127.14286 117.14286 0 1 1  302.85714 332.36218 z"
+       transform="matrix(0.979294,0.000000,0.000000,1.062585,-12.07599,70.62768)"
+       inkscape:export-filename="C:\Documents and Settings\Raino\Skrivbord\select.gif"
+       inkscape:export-xdpi="10.842482"
+       inkscape:export-ydpi="10.842482" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#ffffff;fill-opacity:1.0000000;fill-rule:evenodd;stroke:none;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000"
+       id="path3511"
+       sodipodi:cx="175.71428"
+       sodipodi:cy="332.36218"
+       sodipodi:rx="127.14286"
+       sodipodi:ry="117.14286"
+       d="M 302.85714 332.36218 A 127.14286 117.14286 0 1 1  48.571419,332.36218 A 127.14286 117.14286 0 1 1  302.85714 332.36218 z"
+       transform="matrix(0.786595,0.000000,0.000000,0.857713,21.35521,138.6522)"
+       inkscape:export-filename="C:\Documents and Settings\Raino\Skrivbord\select.gif"
+       inkscape:export-xdpi="10.842482"
+       inkscape:export-ydpi="10.842482" />
+    <path
+       style="fill:#ffe940;fill-opacity:1.0000000;fill-rule:evenodd;stroke:none;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000"
+       d="M 192.48650,481.14179 C 189.80117,481.36499 136.99318,401.18450 133.13886,396.23114 C 132.04352,394.82345 122.13630,405.83727 120.89706,404.64280 C 118.24820,402.08966 123.04279,369.90014 126.11163,370.57704 C 138.59460,373.33042 153.26543,374.32450 156.14875,375.25088 C 162.80121,377.38822 147.01226,384.35292 144.01991,389.48039 C 141.98027,392.97539 199.78588,465.27802 199.78588,474.28703 C 199.78588,478.06425 195.21541,479.73897 192.48650,481.14179 z "
+       id="path3513"
+       sodipodi:nodetypes="cssssssc"
+       inkscape:export-filename="C:\Documents and Settings\Raino\Skrivbord\select.gif"
+       inkscape:export-xdpi="10.842482"
+       inkscape:export-ydpi="10.842482" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#ffe100;fill-opacity:0.75000000;fill-rule:evenodd;stroke:none;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000"
+       id="path3515"
+       sodipodi:cx="175.71428"
+       sodipodi:cy="332.36218"
+       sodipodi:rx="127.14286"
+       sodipodi:ry="117.14286"
+       d="M 302.85714 332.36218 A 127.14286 117.14286 0 1 1  48.571419,332.36218 A 127.14286 117.14286 0 1 1  302.85714 332.36218 z"
+       transform="matrix(0.979294,0.000000,0.000000,1.062585,0.781186,354.9134)"
+       inkscape:export-filename="C:\Documents and Settings\Raino\Skrivbord\guide.gif"
+       inkscape:export-xdpi="10.842482"
+       inkscape:export-ydpi="10.842482" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#ffffff;fill-opacity:1.0000000;fill-rule:evenodd;stroke:none;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000"
+       id="path3517"
+       sodipodi:cx="175.71428"
+       sodipodi:cy="332.36218"
+       sodipodi:rx="127.14286"
+       sodipodi:ry="117.14286"
+       d="M 302.85714 332.36218 A 127.14286 117.14286 0 1 1  48.571419,332.36218 A 127.14286 117.14286 0 1 1  302.85714 332.36218 z"
+       transform="matrix(0.786595,0.000000,0.000000,0.857713,34.21239,422.9379)"
+       inkscape:export-filename="C:\Documents and Settings\Raino\Skrivbord\guide.gif"
+       inkscape:export-xdpi="10.842482"
+       inkscape:export-ydpi="10.842482" />
+    <rect
+       style="fill:#ffe940;fill-opacity:1.0000000;stroke:none"
+       id="rect3527"
+       width="20.000000"
+       height="51.428570"
+       x="160.00000"
+       y="622.36218"
+       rx="29.461321"
+       ry="29.461321"
+       inkscape:export-filename="C:\Documents and Settings\Raino\Skrivbord\guide.gif"
+       inkscape:export-xdpi="10.842482"
+       inkscape:export-ydpi="10.842482" />
+    <rect
+       style="fill:#ffe940;fill-opacity:1.0000000;stroke:none"
+       id="rect3529"
+       width="20.000000"
+       height="51.428570"
+       x="161.42857"
+       y="749.50507"
+       rx="29.461321"
+       ry="29.461321"
+       inkscape:export-filename="C:\Documents and Settings\Raino\Skrivbord\guide.gif"
+       inkscape:export-xdpi="10.842482"
+       inkscape:export-ydpi="10.842482" />
+    <rect
+       style="fill:#ffe940;fill-opacity:1.0000000;stroke:none"
+       id="rect3531"
+       width="20.000000"
+       height="51.428570"
+       x="160.00000"
+       y="685.21930"
+       rx="29.461321"
+       ry="29.461321"
+       inkscape:export-filename="C:\Documents and Settings\Raino\Skrivbord\guide.gif"
+       inkscape:export-xdpi="10.842482"
+       inkscape:export-ydpi="10.842482" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#ffe100;fill-opacity:0.75000000;fill-rule:evenodd;stroke:none;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000"
+       id="path3533"
+       sodipodi:cx="175.71428"
+       sodipodi:cy="332.36218"
+       sodipodi:rx="127.14286"
+       sodipodi:ry="117.14286"
+       d="M 302.85714 332.36218 A 127.14286 117.14286 0 1 1  48.571419,332.36218 A 127.14286 117.14286 0 1 1  302.85714 332.36218 z"
+       transform="matrix(0.979294,0.000000,0.000000,1.062585,373.6383,439.1991)"
+       inkscape:export-filename="C:\Documents and Settings\Raino\Skrivbord\fill.gif"
+       inkscape:export-xdpi="10.842482"
+       inkscape:export-ydpi="10.842482" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#ffffff;fill-opacity:1.0000000;fill-rule:evenodd;stroke:none;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000"
+       id="path3535"
+       sodipodi:cx="175.71428"
+       sodipodi:cy="332.36218"
+       sodipodi:rx="127.14286"
+       sodipodi:ry="117.14286"
+       d="M 302.85714 332.36218 A 127.14286 117.14286 0 1 1  48.571419,332.36218 A 127.14286 117.14286 0 1 1  302.85714 332.36218 z"
+       transform="matrix(0.786595,0.000000,0.000000,0.857713,407.0695,507.2236)"
+       inkscape:export-filename="C:\Documents and Settings\Raino\Skrivbord\fill.gif"
+       inkscape:export-xdpi="10.842482"
+       inkscape:export-ydpi="10.842482" />
+    <path
+       style="fill:#ffe940;fill-opacity:1.0000000;fill-rule:evenodd;stroke:none;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000"
+       d="M 567.87590,726.28140 C 547.18765,714.97639 526.82112,754.94952 524.72379,769.02383 C 522.95271,780.90887 532.63170,770.97611 529.94558,772.50554 C 520.90906,777.65073 520.90751,816.26761 506.38115,820.07049 C 493.43467,823.45976 458.84879,821.11495 465.96175,832.70235 C 471.80398,842.21968 527.74837,843.08062 530.33976,832.65653 C 536.24180,808.91508 530.51066,789.25492 536.84195,787.03539 C 544.04208,784.51127 567.61301,810.47440 583.59019,816.09511 C 592.32092,819.16655 622.45658,790.72048 616.24979,766.79125 C 613.87264,757.62652 580.39338,737.45880 567.87590,726.28140 z "
+       id="path3543"
+       sodipodi:nodetypes="cssssssssc"
+       inkscape:export-filename="C:\Documents and Settings\Raino\Skrivbord\fill.gif"
+       inkscape:export-xdpi="10.842482"
+       inkscape:export-ydpi="10.842482" />
+  </g>
+</svg>
