@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Golden rectangles</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --phi: 1.618034;
+      --ink: #1a1816;
+      --paper: #f5f0e8;
+      --accent: #8b6914;
+      --accent-soft: #c4a84b;
+      --stroke: rgba(26, 24, 22, 0.35);
+      --radius: 4px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      background: var(--paper);
+      color: var(--ink);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-weight: 600;
+      font-size: 1.75rem;
+      letter-spacing: 0.02em;
+      margin: 0 0 0.25rem 0;
+    }
+
+    .phi-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--accent);
+      opacity: 0.9;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    .toolbar button {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      padding: 0.5rem 1rem;
+      background: var(--ink);
+      color: var(--paper);
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .toolbar button:hover {
+      background: #2d2a28;
+    }
+
+    .toolbar button:active {
+      transform: scale(0.98);
+    }
+
+    .toolbar button.secondary {
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--stroke);
+    }
+
+    .toolbar button.secondary:hover {
+      background: rgba(26, 24, 22, 0.06);
+    }
+
+    .toolbar label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .toolbar input[type="number"] {
+      width: 4rem;
+      font-family: inherit;
+      font-size: 0.8rem;
+      padding: 0.35rem 0.5rem;
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .toolbar select {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      padding: 0.4rem 0.6rem;
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .toolbar-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .toolbar-row .label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--stroke);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-right: 0.25rem;
+    }
+
+    .canvas-wrap {
+      flex: 1;
+      width: 100%;
+      max-width: 900px;
+      min-height: 300px;
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: 0 2px 12px rgba(26, 24, 22, 0.08);
+      overflow: auto;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    #canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+    }
+
+    .hint {
+      font-size: 0.9rem;
+      color: var(--stroke);
+      margin-top: 0.75rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Golden rectangles</h1>
+    <p class="phi-label">φ = (1 + √5) / 2 ≈ 1.618</p>
+  </header>
+
+  <div class="toolbar">
+    <div class="toolbar-row">
+      <span class="label">Canvas</span>
+      <select id="canvas-size">
+        <option value="square">Square (600×600)</option>
+        <option value="portrait">Portrait (600×800)</option>
+        <option value="landscape">Landscape (800×600)</option>
+        <option value="movie">Movie 16:9 (960×540)</option>
+        <option value="hdtv">HDTV 16:9 (1280×720)</option>
+      </select>
+      <span class="label">Grid</span>
+      <select id="grid-size">
+        <option value="10">10px</option>
+        <option value="20" selected>20px</option>
+        <option value="30">30px</option>
+        <option value="40">40px</option>
+        <option value="50">50px</option>
+      </select>
+    </div>
+    <div class="toolbar-row">
+      <button type="button" id="mode-draw" title="Draw by dragging">Draw</button>
+      <button type="button" id="mode-add" class="secondary" title="Click to place a rectangle">Add one</button>
+      <span class="label">Size</span>
+      <select id="rect-type">
+        <option value="1xphi">1×φ (landscape)</option>
+        <option value="phix1">φ×1 (portrait)</option>
+        <option value="2x2phi">2×2φ</option>
+        <option value="2phix2">2φ×2</option>
+        <option value="3x3phi">3×3φ</option>
+        <option value="3phix3">3φ×3</option>
+      </select>
+      <button type="button" id="clear" class="secondary">Clear</button>
+    </div>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <p class="hint" id="hint">Drag to draw a golden rectangle (ratio φ : 1)</p>
+
+  <script>
+    (function () {
+      const PHI = (1 + Math.sqrt(5)) / 2;
+
+      const CANVAS_PRESETS = {
+        square: { w: 600, h: 600 },
+        portrait: { w: 600, h: 800 },
+        landscape: { w: 800, h: 600 },
+        movie: { w: 960, h: 540 },
+        hdtv: { w: 1280, h: 720 }
+      };
+
+      const RECT_TYPES = {
+        '1xphi': { gw: 1, gh: PHI },
+        'phix1': { gw: PHI, gh: 1 },
+        '2x2phi': { gw: 2, gh: 2 * PHI },
+        '2phix2': { gw: 2 * PHI, gh: 2 },
+        '3x3phi': { gw: 3, gh: 3 * PHI },
+        '3phix3': { gw: 3 * PHI, gh: 3 }
+      };
+
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const canvasSizeSelect = document.getElementById('canvas-size');
+      const gridSizeSelect = document.getElementById('grid-size');
+      const rectTypeSelect = document.getElementById('rect-type');
+      const hintEl = document.getElementById('hint');
+
+      let rects = [];
+      let mode = 'draw';
+      let dragStart = null;
+      let canvasW = 600;
+      let canvasH = 600;
+      let gridSize = 20;
+      let scale = 1;
+      let offsetX = 0;
+      let offsetY = 0;
+      let dpr = Math.min(2, window.devicePixelRatio || 1);
+
+      function getCanvasPreset() {
+        return CANVAS_PRESETS[canvasSizeSelect.value] || CANVAS_PRESETS.square;
+      }
+
+      function snapToGrid(x) {
+        return Math.round(x / gridSize) * gridSize;
+      }
+
+      function toGoldenRectSnapped(x1, y1, x2, y2) {
+        const sx1 = snapToGrid(x1);
+        const sy1 = snapToGrid(y1);
+        const sx2 = snapToGrid(x2);
+        const sy2 = snapToGrid(y2);
+        const minX = Math.min(sx1, sx2);
+        const minY = Math.min(sy1, sy2);
+        const maxX = Math.max(sx1, sx2);
+        const maxY = Math.max(sy1, sy2);
+        const spanW = maxX - minX;
+        const spanH = maxY - minY;
+        if (spanW < gridSize || spanH < gridSize) return null;
+
+        const cellsW = Math.round(spanW / gridSize);
+        const cellsH = Math.round(spanH / gridSize);
+
+        let gw, gh;
+        if (cellsW >= cellsH * PHI) {
+          gh = cellsH;
+          gw = Math.max(1, Math.round(gh * PHI));
+        } else {
+          gw = cellsW;
+          gh = Math.max(1, Math.round(gw / PHI));
+        }
+
+        const pxW = gw * gridSize;
+        const pxH = gh * gridSize;
+        const cx = (minX + maxX) / 2;
+        const cy = (minY + maxY) / 2;
+        return {
+          x: cx - pxW / 2,
+          y: cy - pxH / 2,
+          width: pxW,
+          height: pxH
+        };
+      }
+
+      function rectFromType(centerX, centerY) {
+        const rt = RECT_TYPES[rectTypeSelect.value] || RECT_TYPES['1xphi'];
+        const w = rt.gw * gridSize;
+        const h = rt.gh * gridSize;
+        const x = snapToGrid(centerX) - w / 2;
+        const y = snapToGrid(centerY) - h / 2;
+        return { x: snapToGrid(x), y: snapToGrid(y), width: w, height: h };
+      }
+
+      function setCanvasSize() {
+        const preset = getCanvasPreset();
+        canvasW = preset.w;
+        canvasH = preset.h;
+        gridSize = Number(gridSizeSelect.value) || 20;
+
+        const wrap = canvas.parentElement;
+        const availW = wrap.clientWidth - 32;
+        const availH = wrap.clientHeight - 32;
+        scale = Math.min(availW / canvasW, availH / canvasH, 1);
+        const dispW = Math.round(canvasW * scale);
+        const dispH = Math.round(canvasH * scale);
+        offsetX = (wrap.clientWidth - dispW) / 2;
+        offsetY = (wrap.clientHeight - dispH) / 2;
+
+        canvas.width = canvasW * dpr;
+        canvas.height = canvasH * dpr;
+        canvas.style.width = dispW + 'px';
+        canvas.style.height = dispH + 'px';
+        canvas.style.marginLeft = (offsetX - 16) + 'px';
+
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        render();
+      }
+
+      function drawGrid() {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(26, 24, 22, 0.12)';
+        ctx.lineWidth = 1;
+        for (let x = 0; x <= canvasW; x += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, canvasH);
+          ctx.stroke();
+        }
+        for (let y = 0; y <= canvasH; y += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(canvasW, y);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function render() {
+        ctx.clearRect(0, 0, canvasW, canvasH);
+        drawGrid();
+
+        ctx.strokeStyle = 'rgba(26, 24, 22, 0.45)';
+        ctx.lineWidth = 1.5;
+        ctx.fillStyle = 'rgba(139, 105, 20, 0.08)';
+
+        rects.forEach(function (r) {
+          ctx.fillRect(r.x, r.y, r.width, r.height);
+          ctx.strokeRect(r.x, r.y, r.width, r.height);
+        });
+
+        if (dragStart && dragStart.current) {
+          const r = dragStart.current;
+          ctx.fillStyle = 'rgba(139, 105, 20, 0.12)';
+          ctx.fillRect(r.x, r.y, r.width, r.height);
+          ctx.strokeStyle = '#8b6914';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(r.x, r.y, r.width, r.height);
+        }
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const c2 = document.createElement('canvas');
+        c2.width = canvasW * dpr;
+        c2.height = canvasH * dpr;
+        const c2ctx = c2.getContext('2d');
+        c2ctx.fillStyle = '#fff';
+        c2ctx.fillRect(0, 0, c2.width, c2.height);
+        c2ctx.drawImage(ctx.canvas, 0, 0);
+      }
+
+      function renderFix() {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvasW, canvasH);
+        drawGrid();
+
+        ctx.strokeStyle = 'rgba(26, 24, 22, 0.45)';
+        ctx.lineWidth = 1.5;
+        ctx.fillStyle = 'rgba(139, 105, 20, 0.08)';
+
+        rects.forEach(function (r) {
+          ctx.fillRect(r.x, r.y, r.width, r.height);
+          ctx.strokeRect(r.x, r.y, r.width, r.height);
+        });
+
+        if (dragStart && dragStart.current) {
+          const r = dragStart.current;
+          ctx.fillStyle = 'rgba(139, 105, 20, 0.12)';
+          ctx.fillRect(r.x, r.y, r.width, r.height);
+          ctx.strokeStyle = '#8b6914';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(r.x, r.y, r.width, r.height);
+        }
+      }
+
+      function getLogicalPoint(e) {
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        const lx = (mx / rect.width) * canvasW;
+        const ly = (my / rect.height) * canvasH;
+        return { x: lx, y: ly };
+      }
+
+      function clampToCanvas(r) {
+        r.x = Math.max(0, Math.min(canvasW - r.width, r.x));
+        r.y = Math.max(0, Math.min(canvasH - r.height, r.y));
+      }
+
+      document.getElementById('mode-draw').addEventListener('click', function () {
+        mode = 'draw';
+        hintEl.textContent = 'Drag to draw a golden rectangle; corners snap to grid';
+      });
+
+      document.getElementById('mode-add').addEventListener('click', function () {
+        mode = 'add';
+        hintEl.textContent = 'Click to place a golden rectangle; position snaps to grid';
+      });
+
+      document.getElementById('clear').addEventListener('click', function () {
+        rects = [];
+        dragStart = null;
+        renderFix();
+      });
+
+      canvasSizeSelect.addEventListener('change', function () {
+        setCanvasSize();
+      });
+
+      gridSizeSelect.addEventListener('change', function () {
+        gridSize = Number(gridSizeSelect.value) || 20;
+        renderFix();
+      });
+
+      canvas.addEventListener('mousedown', function (e) {
+        const p = getLogicalPoint(e);
+        if (mode === 'draw') {
+          dragStart = {
+            x: snapToGrid(p.x),
+            y: snapToGrid(p.y),
+            current: null
+          };
+        } else {
+          const r = rectFromType(p.x, p.y);
+          clampToCanvas(r);
+          rects.push(r);
+          renderFix();
+        }
+      });
+
+      canvas.addEventListener('mousemove', function (e) {
+        if (mode !== 'draw' || !dragStart) return;
+        const p = getLogicalPoint(e);
+        dragStart.current = toGoldenRectSnapped(dragStart.x, dragStart.y, p.x, p.y);
+        if (dragStart.current) clampToCanvas(dragStart.current);
+        renderFix();
+      });
+
+      canvas.addEventListener('mouseup', function () {
+        if (mode !== 'draw' || !dragStart) return;
+        if (dragStart.current && dragStart.current.width >= gridSize && dragStart.current.height >= gridSize) {
+          rects.push(dragStart.current);
+        }
+        dragStart = null;
+        renderFix();
+      });
+
+      canvas.addEventListener('mouseleave', function () {
+        if (dragStart) {
+          dragStart = null;
+          renderFix();
+        }
+      });
+
+      window.addEventListener('resize', setCanvasSize);
+      setCanvasSize();
+    })();
+  </script>
+</body>
+</html>
