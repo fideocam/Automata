@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Golden rectangles · snap to visible grid</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --phi: 1.618034;
+      --ink: #1a1816;
+      --paper: #f5f0e8;
+      --accent: #8b6914;
+      --accent-soft: #c4a84b;
+      --stroke: rgba(26, 24, 22, 0.35);
+      --radius: 4px;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      background: var(--paper);
+      color: var(--ink);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-weight: 600;
+      font-size: 1.75rem;
+      letter-spacing: 0.02em;
+      margin: 0 0 0.25rem 0;
+    }
+    .phi-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--accent);
+      opacity: 0.9;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .toolbar-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.5rem;
+    }
+    .toolbar button {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      padding: 0.5rem 1rem;
+      background: var(--ink);
+      color: var(--paper);
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .toolbar button:hover { background: #2d2a28; }
+    .toolbar button:active { transform: scale(0.98); }
+    .toolbar button.secondary {
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--stroke);
+    }
+    .toolbar button.secondary:hover { background: rgba(26, 24, 22, 0.06); }
+    .toolbar select {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      padding: 0.4rem 0.6rem;
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      background: #fff;
+      cursor: pointer;
+    }
+    .toolbar-row .label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--stroke);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-right: 0.25rem;
+    }
+    .canvas-wrap {
+      flex: 1;
+      width: 100%;
+      max-width: 1400px;
+      min-height: 450px;
+      background: #e0e0e0;
+      border-radius: var(--radius);
+      box-shadow: 0 2px 12px rgba(26, 24, 22, 0.08);
+      overflow: auto;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    #canvas {
+      display: block;
+      background: #ffffff;
+      box-shadow: 0 0 0 2px #8b6914;
+      cursor: crosshair;
+    }
+    .hint {
+      font-size: 0.9rem;
+      color: var(--stroke);
+      margin-top: 0.75rem;
+      text-align: center;
+    }
+    .button-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-left: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Golden rectangles · snap to visible grid</h1>
+    <p class="phi-label">φ = 1.618 — drag to draw golden rectangles, snaps to visible grid intersections</p>
+  </header>
+
+  <div class="toolbar">
+    <div class="toolbar-row">
+      <span class="label">Canvas</span>
+      <select id="canvas-size">
+        <option value="square" selected>Square 1200×1200</option>
+        <option value="portrait">Portrait 800×1200</option>
+        <option value="landscape">Landscape 1200×800</option>
+        <option value="movie">CinemaScope 2.40:1 (1200×500)</option>
+        <option value="hdtv">HDTV 16:9 (1280×720)</option>
+      </select>
+      <div class="button-group">
+        <button type="button" id="undo" class="secondary" title="Undo last rectangle">↩ Undo</button>
+        <button type="button" id="clear" class="secondary">Clear all</button>
+        <button type="button" id="export-svg" class="secondary" title="Export as SVG">⬇ SVG</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="canvas"></canvas>
+  </div>
+  <p class="hint" id="hint">⇢ click snaps to grid — drag to draw golden rectangles</p>
+
+  <script>
+    (function() {
+      const PHI = (1 + Math.sqrt(5)) / 2;
+      
+      // Canvas presets
+      const CANVAS_PRESETS = {
+        square: { w: 1200, h: 1200 },
+        portrait: { w: 800, h: 1200 },
+        landscape: { w: 1200, h: 800 },
+        movie: { w: 1200, h: 500 },
+        hdtv: { w: 1280, h: 720 }
+      };
+
+      // DOM elements
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const canvasSizeSelect = document.getElementById('canvas-size');
+      
+      // State
+      let rectangles = [];  // Store rectangles instead of arcs
+      let dragStart = null;
+      let previewRect = null;
+      
+      // Canvas dimensions
+      let canvasW = 1200;
+      let canvasH = 1200;
+      
+      // Grid lines
+      let gridLinesX = [];
+      let gridLinesY = [];
+
+      function getCanvasPreset() {
+        return CANVAS_PRESETS[canvasSizeSelect.value] || CANVAS_PRESETS.square;
+      }
+
+      // Recursively collect golden grid lines
+      function collectGoldenLines(x1, x2, y1, y2, depth = 0) {
+        if (depth >= 3) return;
+        
+        const width = x2 - x1;
+        const height = y2 - y1;
+        
+        const phiInv = 1 / PHI;
+        const phiInvComp = 1 - phiInv;
+        
+        const v1 = x1 + width * phiInv;
+        const v2 = x1 + width * phiInvComp;
+        const h1 = y1 + height * phiInv;
+        const h2 = y1 + height * phiInvComp;
+        
+        // Add vertical lines
+        if (!gridLinesX.some(ex => Math.abs(ex - v1) < 0.5)) {
+          gridLinesX.push(v1);
+        }
+        if (!gridLinesX.some(ex => Math.abs(ex - v2) < 0.5)) {
+          gridLinesX.push(v2);
+        }
+        
+        // Add horizontal lines
+        if (!gridLinesY.some(ex => Math.abs(ex - h1) < 0.5)) {
+          gridLinesY.push(h1);
+        }
+        if (!gridLinesY.some(ex => Math.abs(ex - h2) < 0.5)) {
+          gridLinesY.push(h2);
+        }
+        
+        // Recurse
+        collectGoldenLines(x1, v1, y1, h1, depth + 1);
+        collectGoldenLines(v1, v2, y1, h1, depth + 1);
+        collectGoldenLines(v2, x2, y1, h1, depth + 1);
+        collectGoldenLines(x1, v1, h1, h2, depth + 1);
+        collectGoldenLines(v1, v2, h1, h2, depth + 1);
+        collectGoldenLines(v2, x2, h1, h2, depth + 1);
+        collectGoldenLines(x1, v1, h2, y2, depth + 1);
+        collectGoldenLines(v1, v2, h2, y2, depth + 1);
+        collectGoldenLines(v2, x2, h2, y2, depth + 1);
+      }
+
+      function updateGridLines() {
+        gridLinesX = [0, canvasW];
+        gridLinesY = [0, canvasH];
+        
+        collectGoldenLines(0, canvasW, 0, canvasH, 0);
+        
+        gridLinesX = [...new Set(gridLinesX.map(x => Math.round(x * 10) / 10))].map(x => +x).sort((a, b) => a - b);
+        gridLinesY = [...new Set(gridLinesY.map(y => Math.round(y * 10) / 10))].map(y => +y).sort((a, b) => a - b);
+      }
+
+      function transformRectangles(oldW, oldH, newW, newH) {
+        if (oldW === 0 || oldH === 0) return;
+        const scaleX = newW / oldW;
+        const scaleY = newH / oldH;
+        rectangles = rectangles.map(rect => ({
+          x: rect.x * scaleX,
+          y: rect.y * scaleY,
+          w: rect.w * scaleX,
+          h: rect.h * scaleY
+        }));
+      }
+
+      // Snap to nearest grid intersection
+      function snapToGridIntersection(x, y) {
+        // Find nearest X grid line
+        let snapX = gridLinesX[0];
+        let minDistX = Math.abs(x - gridLinesX[0]);
+        
+        for (let gx of gridLinesX) {
+          const dist = Math.abs(x - gx);
+          if (dist < minDistX) {
+            minDistX = dist;
+            snapX = gx;
+          }
+        }
+        
+        // Find nearest Y grid line
+        let snapY = gridLinesY[0];
+        let minDistY = Math.abs(y - gridLinesY[0]);
+        
+        for (let gy of gridLinesY) {
+          const dist = Math.abs(y - gy);
+          if (dist < minDistY) {
+            minDistY = dist;
+            snapY = gy;
+          }
+        }
+        
+        return { x: snapX, y: snapY };
+      }
+
+      function getCanvasCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        
+        const mouseX = (e.clientX - rect.left) * scaleX;
+        const mouseY = (e.clientY - rect.top) * scaleY;
+        
+        return {
+          x: Math.min(canvasW, Math.max(0, mouseX)),
+          y: Math.min(canvasH, Math.max(0, mouseY))
+        };
+      }
+
+      function computeGoldenRectFromDrag(p1, p2) {
+        const minX = Math.min(p1.x, p2.x);
+        const minY = Math.min(p1.y, p2.y);
+        const maxX = Math.max(p1.x, p2.x);
+        const maxY = Math.max(p1.y, p2.y);
+        
+        let spanW = maxX - minX;
+        let spanH = maxY - minY;
+        
+        if (spanW < 2 || spanH < 2) return null;
+        
+        let w, h;
+        // Enforce golden ratio
+        if (spanW >= spanH) {
+          h = spanH;
+          w = h * PHI;
+          if (w > spanW) {
+            w = spanW;
+            h = w / PHI;
+          }
+        } else {
+          w = spanW;
+          h = w * PHI;
+          if (h > spanH) {
+            h = spanH;
+            w = h / PHI;
+          }
+        }
+        
+        const cx = (minX + maxX) / 2;
+        const cy = (minY + maxY) / 2;
+        
+        return {
+          x: cx - w/2,
+          y: cy - h/2,
+          w: w,
+          h: h
+        };
+      }
+
+      // SVG Export
+      function exportSVG() {
+        if (rectangles.length === 0) {
+          alert('No rectangles to export');
+          return;
+        }
+        
+        let svg = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+        svg += `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${canvasW} ${canvasH}" width="${canvasW}" height="${canvasH}">\n`;
+        svg += `  <rect width="${canvasW}" height="${canvasH}" fill="white" stroke="none"/>\n`;
+        
+        rectangles.forEach(rect => {
+          const { x, y, w, h } = rect;
+          svg += `  <rect x="${x}" y="${y}" width="${w}" height="${h}" fill="rgba(139,105,20,0.18)" stroke="#8b6914" stroke-width="2.2"/>\n`;
+        });
+        
+        svg += `</svg>`;
+        
+        const blob = new Blob([svg], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `golden-rectangles-${canvasW}x${canvasH}.svg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      function drawGoldenGrid() {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvasW, canvasH);
+        
+        // Draw vertical lines
+        gridLinesX.forEach(x => {
+          const distFromLeft = x;
+          const distFromRight = canvasW - x;
+          const minDist = Math.min(distFromLeft, distFromRight);
+          const maxPossible = canvasW / 2;
+          const depth = Math.floor((minDist / maxPossible) * 3);
+          
+          if (Math.abs(x - 0) < 0.1 || Math.abs(x - canvasW) < 0.1) {
+            ctx.strokeStyle = 'rgba(26, 24, 22, 0.6)';
+            ctx.lineWidth = 2.5;
+          } else if (depth === 0) {
+            ctx.strokeStyle = 'rgba(139, 105, 20, 0.5)';
+            ctx.lineWidth = 2;
+          } else if (depth === 1) {
+            ctx.strokeStyle = 'rgba(139, 105, 20, 0.35)';
+            ctx.lineWidth = 1.5;
+          } else {
+            ctx.strokeStyle = 'rgba(139, 105, 20, 0.2)';
+            ctx.lineWidth = 1;
+          }
+          
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, canvasH);
+          ctx.stroke();
+        });
+        
+        // Draw horizontal lines
+        gridLinesY.forEach(y => {
+          const distFromTop = y;
+          const distFromBottom = canvasH - y;
+          const minDist = Math.min(distFromTop, distFromBottom);
+          const maxPossible = canvasH / 2;
+          const depth = Math.floor((minDist / maxPossible) * 3);
+          
+          if (Math.abs(y - 0) < 0.1 || Math.abs(y - canvasH) < 0.1) {
+            ctx.strokeStyle = 'rgba(26, 24, 22, 0.6)';
+            ctx.lineWidth = 2.5;
+          } else if (depth === 0) {
+            ctx.strokeStyle = 'rgba(139, 105, 20, 0.5)';
+            ctx.lineWidth = 2;
+          } else if (depth === 1) {
+            ctx.strokeStyle = 'rgba(139, 105, 20, 0.35)';
+            ctx.lineWidth = 1.5;
+          } else {
+            ctx.strokeStyle = 'rgba(139, 105, 20, 0.2)';
+            ctx.lineWidth = 1;
+          }
+          
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(canvasW, y);
+          ctx.stroke();
+        });
+        
+        // Draw intersection dots
+        ctx.fillStyle = 'rgba(139, 105, 20, 0.4)';
+        gridLinesX.forEach(x => {
+          gridLinesY.forEach(y => {
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, 2 * Math.PI);
+            ctx.fill();
+          });
+        });
+      }
+
+      function drawRectangle(rect) {
+        const { x, y, w, h } = rect;
+        ctx.save();
+        
+        ctx.fillStyle = 'rgba(139, 105, 20, 0.18)';
+        ctx.fillRect(x, y, w, h);
+        
+        ctx.strokeStyle = '#8b6914';
+        ctx.lineWidth = 2.2;
+        ctx.strokeRect(x, y, w, h);
+        
+        ctx.restore();
+      }
+
+      function render() {
+        ctx.clearRect(0, 0, canvasW, canvasH);
+        
+        drawGoldenGrid();
+        rectangles.forEach(rect => drawRectangle(rect));
+        
+        if (previewRect) {
+          drawRectangle(previewRect);
+        }
+      }
+
+      function setCanvasSize() {
+        const preset = getCanvasPreset();
+        const newW = preset.w;
+        const newH = preset.h;
+        
+        if (rectangles.length > 0) {
+          transformRectangles(canvasW, canvasH, newW, newH);
+        }
+        
+        canvasW = newW;
+        canvasH = newH;
+        
+        canvas.width = canvasW;
+        canvas.height = canvasH;
+        
+        canvas.style.width = canvasW + 'px';
+        canvas.style.height = canvasH + 'px';
+        
+        updateGridLines();
+        render();
+      }
+
+      // Event handlers
+      function handleMouseDown(e) {
+        e.preventDefault();
+        const coords = getCanvasCoords(e);
+        const snapped = snapToGridIntersection(coords.x, coords.y);
+        dragStart = snapped;
+        previewRect = null;
+      }
+
+      function handleMouseMove(e) {
+        if (!dragStart) return;
+        e.preventDefault();
+        
+        const current = getCanvasCoords(e);
+        const snappedCurrent = snapToGridIntersection(current.x, current.y);
+        
+        if (snappedCurrent.x === dragStart.x && snappedCurrent.y === dragStart.y) {
+          previewRect = null;
+          render();
+          return;
+        }
+        
+        const goldenRect = computeGoldenRectFromDrag(dragStart, snappedCurrent);
+        if (goldenRect) {
+          previewRect = goldenRect;
+        } else {
+          previewRect = null;
+        }
+        render();
+      }
+
+      function handleMouseUp(e) {
+        if (dragStart && previewRect) {
+          rectangles.push({ ...previewRect });
+        }
+        dragStart = null;
+        previewRect = null;
+        render();
+      }
+
+      function handleMouseLeave() {
+        if (dragStart) {
+          dragStart = null;
+          previewRect = null;
+          render();
+        }
+      }
+
+      // UI controls
+      document.getElementById('clear').addEventListener('click', () => {
+        rectangles = [];
+        previewRect = null;
+        dragStart = null;
+        render();
+      });
+
+      document.getElementById('undo').addEventListener('click', () => {
+        rectangles.pop();
+        previewRect = null;
+        dragStart = null;
+        render();
+      });
+
+      document.getElementById('export-svg').addEventListener('click', exportSVG);
+
+      canvasSizeSelect.addEventListener('change', setCanvasSize);
+
+      // Attach canvas events
+      canvas.addEventListener('mousedown', handleMouseDown);
+      canvas.addEventListener('mousemove', handleMouseMove);
+      canvas.addEventListener('mouseup', handleMouseUp);
+      canvas.addEventListener('mouseleave', handleMouseLeave);
+      canvas.addEventListener('dragstart', (e) => e.preventDefault());
+
+      // Initialize
+      setCanvasSize();
+      window.addEventListener('resize', setCanvasSize);
+    })();
+  </script>
+</body>
+</html>
