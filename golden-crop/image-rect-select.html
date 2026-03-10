@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Image area selector</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --phi: 1.618034;
+      --ink: #1a1816;
+      --paper: #f5f0e8;
+      --accent: #8b6914;
+      --accent-soft: #c4a84b;
+      --stroke: rgba(26, 24, 22, 0.35);
+      --radius: 4px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      background: var(--paper);
+      color: var(--ink);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-weight: 600;
+      font-size: 1.75rem;
+      letter-spacing: 0.02em;
+      margin: 0 0 0.25rem 0;
+    }
+
+    .subtitle {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--accent);
+      opacity: 0.9;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    .toolbar button {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      padding: 0.5rem 1rem;
+      background: var(--ink);
+      color: var(--paper);
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .toolbar button:hover {
+      background: #2d2a28;
+    }
+
+    .toolbar button:active {
+      transform: scale(0.98);
+    }
+
+    .toolbar button.secondary {
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--stroke);
+    }
+
+    .toolbar button.secondary:hover {
+      background: rgba(26, 24, 22, 0.06);
+    }
+
+    .toolbar label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .toolbar input[type="file"] {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      padding: 0.35rem 0;
+      max-width: 220px;
+    }
+
+    .toolbar .label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--stroke);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-right: 0.25rem;
+    }
+
+    .canvas-wrap {
+      flex: 1;
+      width: 100%;
+      max-width: 900px;
+      min-height: 300px;
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: 0 2px 12px rgba(26, 24, 22, 0.08);
+      overflow: auto;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .canvas-wrap.empty {
+      border: 2px dashed var(--stroke);
+      background: rgba(26, 24, 22, 0.03);
+    }
+
+    .canvas-wrap.empty::before {
+      content: 'Choose an image to select a rectangle area';
+      font-size: 0.95rem;
+      color: var(--stroke);
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .canvas-container {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    #canvas {
+      display: block;
+      max-width: 100%;
+      max-height: 70vh;
+      cursor: crosshair;
+    }
+
+    .crop-mask {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      display: none;
+    }
+
+    .crop-mask.visible {
+      display: block;
+    }
+
+    .crop-mask .crop-mask-top,
+    .crop-mask .crop-mask-bottom,
+    .crop-mask .crop-mask-left,
+    .crop-mask .crop-mask-right {
+      position: absolute;
+      background: rgba(26, 24, 22, 0.75);
+    }
+
+    .toolbar select {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      padding: 0.4rem 0.6rem;
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .selection-info {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      margin-top: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      background: rgba(26, 24, 22, 0.05);
+      border-radius: var(--radius);
+      border: 1px solid var(--stroke);
+      min-height: 2.5rem;
+      color: var(--ink);
+    }
+
+    .selection-info.empty {
+      color: var(--stroke);
+    }
+
+    .golden-match {
+      margin-top: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: rgba(139, 105, 20, 0.08);
+      border: 1px solid rgba(139, 105, 20, 0.35);
+      border-radius: var(--radius);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--ink);
+    }
+
+    .golden-match.hidden {
+      display: none;
+    }
+
+    .golden-match h3 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem 0;
+      color: var(--accent);
+    }
+
+    .golden-match .match-name {
+      font-weight: 500;
+      color: var(--accent);
+    }
+
+    .golden-match .crop-row {
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--stroke);
+    }
+
+    .golden-match .crop-row strong {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--stroke);
+    }
+
+    .hint {
+      font-size: 0.9rem;
+      color: var(--stroke);
+      margin-top: 0.5rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Golden crop</h1>
+    <p class="subtitle">Select an area — we put it in the golden cell that best matches; crop is that cell; grid appears inside the crop (not over your selection)</p>
+  </header>
+
+  <div class="toolbar">
+    <span class="label">Image</span>
+    <label>
+      <input type="file" id="file-input" accept="image/*" />
+    </label>
+    <button type="button" id="clear-selection" class="secondary" disabled>Clear selection</button>
+    <button type="button" id="clear-all" class="secondary" disabled>Clear image</button>
+  </div>
+
+  <div class="canvas-wrap empty" id="canvas-wrap">
+    <div class="canvas-container" id="canvas-container">
+      <canvas id="canvas"></canvas>
+      <div class="crop-mask" id="crop-mask">
+        <div class="crop-mask-top" id="crop-mask-top"></div>
+        <div class="crop-mask-bottom" id="crop-mask-bottom"></div>
+        <div class="crop-mask-left" id="crop-mask-left"></div>
+        <div class="crop-mask-right" id="crop-mask-right"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="selection-info empty" id="selection-info">No selection — drag on the image to select an area</div>
+  <div class="golden-match hidden" id="golden-match">
+    <h3>Golden grid match</h3>
+    <p id="golden-match-text"></p>
+    <div class="crop-row">
+      <strong>Crop</strong> (golden-ratio frame with space around object — use these coordinates)<br />
+      <span id="golden-crop-coords"></span>
+    </div>
+    <div class="crop-row">
+      <strong>Optimal position</strong> (crop center — place your object here for best balance)<br />
+      <span id="optimal-position"></span>
+    </div>
+  </div>
+  <p class="hint" id="hint">Draw a selection; the grid is calculated from it (golden mean in reverse). Use arrow keys to expand the crop.</p>
+
+  <script>
+    (function () {
+      const PHI = (1 + Math.sqrt(5)) / 2;
+      const RECT_TYPES = {
+        '1×φ (landscape)': { gw: 1, gh: PHI },
+        'φ×1 (portrait)': { gw: PHI, gh: 1 },
+        '2×2φ': { gw: 2, gh: 2 * PHI },
+        '2φ×2': { gw: 2 * PHI, gh: 2 },
+        '3×3φ': { gw: 3, gh: 3 * PHI },
+        '3φ×3': { gw: 3 * PHI, gh: 3 }
+      };
+
+      const fileInput = document.getElementById('file-input');
+      const canvasWrap = document.getElementById('canvas-wrap');
+      const canvasContainer = document.getElementById('canvas-container');
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const cropMask = document.getElementById('crop-mask');
+      const cropMaskTop = document.getElementById('crop-mask-top');
+      const cropMaskBottom = document.getElementById('crop-mask-bottom');
+      const cropMaskLeft = document.getElementById('crop-mask-left');
+      const cropMaskRight = document.getElementById('crop-mask-right');
+      const clearSelectionBtn = document.getElementById('clear-selection');
+      const clearAllBtn = document.getElementById('clear-all');
+      const selectionInfo = document.getElementById('selection-info');
+      const goldenMatchEl = document.getElementById('golden-match');
+      const goldenMatchText = document.getElementById('golden-match-text');
+      const goldenCropCoordsEl = document.getElementById('golden-crop-coords');
+      const optimalPositionEl = document.getElementById('optimal-position');
+
+      let img = null;
+      let goldenCrop = null;
+      let imgNaturalW = 0;
+      let imgNaturalH = 0;
+      let displayW = 0;
+      let displayH = 0;
+      let scaleX = 1;
+      let scaleY = 1;
+      let selection = null;
+      let dragStart = null;
+
+      function hasImage() {
+        return img && img.complete && img.naturalWidth > 0;
+      }
+
+      function setCanvasWrapEmpty(empty) {
+        canvasWrap.classList.toggle('empty', empty);
+        clearAllBtn.disabled = !hasImage();
+      }
+
+      function draw() {
+        if (!hasImage()) {
+          cropMask.classList.remove('visible');
+          return;
+        }
+        canvasContainer.style.width = displayW + 'px';
+        canvasContainer.style.height = displayH + 'px';
+        cropMask.style.width = displayW + 'px';
+        cropMask.style.height = displayH + 'px';
+        canvas.width = displayW;
+        canvas.height = displayH;
+        ctx.clearRect(0, 0, displayW, displayH);
+        ctx.drawImage(img, 0, 0, imgNaturalW, imgNaturalH, 0, 0, displayW, displayH);
+
+        let effectiveSel = selection;
+        if (selection && goldenCrop) {
+          effectiveSel = snapSelectionToGrid(selection, goldenCrop);
+          drawGoldenMeanGridInCropOutsideSelection(goldenCrop, effectiveSel);
+        }
+
+        if (selection) {
+          const sel = effectiveSel || selection;
+          const sx = sel.x * scaleX;
+          const sy = sel.y * scaleY;
+          const sw = sel.width * scaleX;
+          const sh = sel.height * scaleY;
+          ctx.fillStyle = 'rgba(139, 105, 20, 0.2)';
+          ctx.fillRect(sx, sy, sw, sh);
+          ctx.strokeStyle = '#8b6914';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(sx, sy, sw, sh);
+        }
+
+        if (dragStart && dragStart.current) {
+          const r = dragStart.current;
+          ctx.fillStyle = 'rgba(139, 105, 20, 0.25)';
+          ctx.fillRect(r.x, r.y, r.w, r.h);
+          ctx.strokeStyle = '#8b6914';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(r.x, r.y, r.w, r.h);
+        }
+
+        if (goldenCrop) {
+          const gx = goldenCrop.x * scaleX;
+          const gy = goldenCrop.y * scaleY;
+          const gw = goldenCrop.width * scaleX;
+          const gh = goldenCrop.height * scaleY;
+          ctx.setLineDash([6, 4]);
+          ctx.strokeStyle = '#8b6914';
+          ctx.lineWidth = 1.5;
+          ctx.fillStyle = 'rgba(139, 105, 20, 0.06)';
+          ctx.fillRect(gx, gy, gw, gh);
+          ctx.strokeRect(gx, gy, gw, gh);
+          ctx.setLineDash([]);
+          cropMask.classList.add('visible');
+          cropMaskTop.style.top = '0';
+          cropMaskTop.style.left = '0';
+          cropMaskTop.style.width = displayW + 'px';
+          cropMaskTop.style.height = gy + 'px';
+          cropMaskBottom.style.top = (gy + gh) + 'px';
+          cropMaskBottom.style.left = '0';
+          cropMaskBottom.style.width = displayW + 'px';
+          cropMaskBottom.style.height = (displayH - gy - gh) + 'px';
+          cropMaskLeft.style.top = gy + 'px';
+          cropMaskLeft.style.left = '0';
+          cropMaskLeft.style.width = gx + 'px';
+          cropMaskLeft.style.height = gh + 'px';
+          cropMaskRight.style.top = gy + 'px';
+          cropMaskRight.style.left = (gx + gw) + 'px';
+          cropMaskRight.style.width = (displayW - gx - gw) + 'px';
+          cropMaskRight.style.height = gh + 'px';
+        } else {
+          cropMask.classList.remove('visible');
+        }
+      }
+
+      function toD(imgX, imgY) {
+        return { x: imgX * scaleX, y: imgY * scaleY };
+      }
+
+      function drawVerticalSegmentOutsideSel(imgX, y0, y1, sel) {
+        if (imgX >= sel.x + sel.width || imgX <= sel.x) {
+          const d0 = toD(imgX, y0);
+          const d1 = toD(imgX, y1);
+          ctx.moveTo(d0.x, d0.y);
+          ctx.lineTo(d1.x, d1.y);
+          return;
+        }
+        if (y0 < sel.y) {
+          const d0 = toD(imgX, y0);
+          const d1 = toD(imgX, Math.min(y1, sel.y));
+          ctx.moveTo(d0.x, d0.y);
+          ctx.lineTo(d1.x, d1.y);
+        }
+        if (y1 > sel.y + sel.height) {
+          const d0 = toD(imgX, Math.max(y0, sel.y + sel.height));
+          const d1 = toD(imgX, y1);
+          ctx.moveTo(d0.x, d0.y);
+          ctx.lineTo(d1.x, d1.y);
+        }
+      }
+
+      function drawHorizontalSegmentOutsideSel(imgY, x0, x1, sel) {
+        if (imgY >= sel.y + sel.height || imgY <= sel.y) {
+          const d0 = toD(x0, imgY);
+          const d1 = toD(x1, imgY);
+          ctx.moveTo(d0.x, d0.y);
+          ctx.lineTo(d1.x, d1.y);
+          return;
+        }
+        if (x0 < sel.x) {
+          const d0 = toD(x0, imgY);
+          const d1 = toD(Math.min(x1, sel.x), imgY);
+          ctx.moveTo(d0.x, d0.y);
+          ctx.lineTo(d1.x, d1.y);
+        }
+        if (x1 > sel.x + sel.width) {
+          const d0 = toD(Math.max(x0, sel.x + sel.width), imgY);
+          const d1 = toD(x1, imgY);
+          ctx.moveTo(d0.x, d0.y);
+          ctx.lineTo(d1.x, d1.y);
+        }
+      }
+
+      function getGridPositionsFromCrop(crop) {
+        const cx = crop.x;
+        const cy = crop.y;
+        const cw = crop.width;
+        const ch = crop.height;
+        const v1 = cx + cw / PHI;
+        const v2 = cx + cw - cw / PHI;
+        const h1 = cy + ch / PHI;
+        const h2 = cy + ch - ch / PHI;
+        const cols = [cx, v1, v2, cx + cw];
+        const rows = [cy, h1, h2, cy + ch];
+        const posX = [];
+        const posY = [];
+        for (let i = 0; i < 3; i++) {
+          const a = cols[i];
+          const b = cols[i + 1];
+          posX.push(a);
+          posX.push(a + (b - a) / PHI);
+          posX.push(b - (b - a) / PHI);
+        }
+        posX.push(cols[3]);
+        for (let j = 0; j < 3; j++) {
+          const a = rows[j];
+          const b = rows[j + 1];
+          posY.push(a);
+          posY.push(a + (b - a) / PHI);
+          posY.push(b - (b - a) / PHI);
+        }
+        posY.push(rows[3]);
+        posX.sort(function (u, v) { return u - v; });
+        posY.sort(function (u, v) { return u - v; });
+        return { posX, posY };
+      }
+
+      function clampCropToImage(crop) {
+        const r = { x: crop.x, y: crop.y, width: crop.width, height: crop.height };
+        r.x = Math.max(0, Math.min(r.x, imgNaturalW - 1));
+        r.y = Math.max(0, Math.min(r.y, imgNaturalH - 1));
+        r.width = Math.min(r.width, imgNaturalW - r.x);
+        r.height = Math.min(r.height, imgNaturalH - r.y);
+        r.width = Math.max(1, r.width);
+        r.height = Math.max(1, r.height);
+        return r;
+      }
+
+      function snapToNearest(arr, val) {
+        let best = arr[0];
+        let bestD = Math.abs(arr[0] - val);
+        for (let k = 1; k < arr.length; k++) {
+          const d = Math.abs(arr[k] - val);
+          if (d < bestD) { bestD = d; best = arr[k]; }
+        }
+        return best;
+      }
+
+      function snapSelectionToGrid(sel, crop) {
+        const { posX, posY } = getGridPositionsFromCrop(crop);
+        let left = snapToNearest(posX, sel.x);
+        let right = snapToNearest(posX, sel.x + sel.width);
+        let top = snapToNearest(posY, sel.y);
+        let bottom = snapToNearest(posY, sel.y + sel.height);
+        if (right <= left) {
+          for (let k = 0; k < posX.length; k++) { if (posX[k] > left) { right = posX[k]; break; } }
+          if (right <= left) right = left + 1;
+        }
+        if (bottom <= top) {
+          for (let k = 0; k < posY.length; k++) { if (posY[k] > top) { bottom = posY[k]; break; } }
+          if (bottom <= top) bottom = top + 1;
+        }
+        const snapped = { x: left, y: top, width: right - left, height: bottom - top };
+        return clampSelectionToImage(snapped);
+      }
+
+      function clampSelectionToImage(sel) {
+        const r = { x: sel.x, y: sel.y, width: sel.width, height: sel.height };
+        r.x = Math.max(0, Math.min(r.x, imgNaturalW - 1));
+        r.y = Math.max(0, Math.min(r.y, imgNaturalH - 1));
+        const maxW = imgNaturalW - r.x;
+        const maxH = imgNaturalH - r.y;
+        r.width = Math.max(1, Math.min(r.width, maxW));
+        r.height = Math.max(1, Math.min(r.height, maxH));
+        return r;
+      }
+
+      function drawGoldenMeanGridInCropOutsideSelection(crop, sel) {
+        const cx = crop.x;
+        const cy = crop.y;
+        const cw = crop.width;
+        const ch = crop.height;
+        const v1 = cx + cw / PHI;
+        const v2 = cx + cw - cw / PHI;
+        const h1 = cy + ch / PHI;
+        const h2 = cy + ch - ch / PHI;
+
+        ctx.save();
+        ctx.strokeStyle = 'rgba(139, 105, 20, 0.4)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        drawVerticalSegmentOutsideSel(v1, cy, cy + ch, sel);
+        drawVerticalSegmentOutsideSel(v2, cy, cy + ch, sel);
+        drawHorizontalSegmentOutsideSel(h1, cx, cx + cw, sel);
+        drawHorizontalSegmentOutsideSel(h2, cx, cx + cw, sel);
+        ctx.stroke();
+
+        const cols = [cx, v1, v2, cx + cw];
+        const rows = [cy, h1, h2, cy + ch];
+        ctx.strokeStyle = 'rgba(26, 24, 22, 0.14)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let j = 0; j < 3; j++) {
+          for (let i = 0; i < 3; i++) {
+            const cellL = cols[i];
+            const cellR = cols[i + 1];
+            const cellT = rows[j];
+            const cellB = rows[j + 1];
+            const cellW = cellR - cellL;
+            const cellH = cellB - cellT;
+            if (cellW < 2 || cellH < 2) continue;
+            const innerV1 = cellL + cellW / PHI;
+            const innerV2 = cellL + cellW - cellW / PHI;
+            const innerH1 = cellT + cellH / PHI;
+            const innerH2 = cellT + cellH - cellH / PHI;
+            drawVerticalSegmentOutsideSel(innerV1, cellT, cellB, sel);
+            drawVerticalSegmentOutsideSel(innerV2, cellT, cellB, sel);
+            drawHorizontalSegmentOutsideSel(innerH1, cellL, cellR, sel);
+            drawHorizontalSegmentOutsideSel(innerH2, cellL, cellR, sel);
+          }
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function findClosestGoldenType(ratio) {
+        let bestName = '';
+        let bestDiff = Infinity;
+        let bestR = 0;
+        for (const [name, rt] of Object.entries(RECT_TYPES)) {
+          const r = rt.gw / rt.gh;
+          const diff = Math.abs(Math.log(ratio) - Math.log(r));
+          if (diff < bestDiff) {
+            bestDiff = diff;
+            bestName = name;
+            bestR = r;
+          }
+        }
+        return { name: bestName, ratio: bestR };
+      }
+
+      function goldenCropFromSelection(sel) {
+        const cx = sel.x + sel.width / 2;
+        const cy = sel.y + sel.height / 2;
+        const selW = sel.width;
+        const selH = sel.height;
+        const selRatio = selW / selH;
+        const { name, ratio: R } = findClosestGoldenType(selRatio);
+
+        let outW, outH;
+        if (R < 1) {
+          const invR = 1 / R;
+          if (selW * invR >= selH) {
+            outW = selW;
+            outH = selW * invR;
+          } else {
+            outH = selH;
+            outW = selH * R;
+          }
+        } else {
+          if (selH * R >= selW) {
+            outH = selH;
+            outW = selH * R;
+          } else {
+            outW = selW;
+            outH = selW / R;
+          }
+        }
+
+        const circumscribed = {
+          x: cx - outW / 2,
+          y: cy - outH / 2,
+          width: outW,
+          height: outH
+        };
+        function clampToImage(r) {
+          const out = { ...r };
+          if (out.x < 0) { out.width += out.x; out.x = 0; }
+          if (out.y < 0) { out.height += out.y; out.y = 0; }
+          if (out.x + out.width > imgNaturalW) out.width = imgNaturalW - out.x;
+          if (out.y + out.height > imgNaturalH) out.height = imgNaturalH - out.y;
+          return out;
+        }
+        const cropCenterX = circumscribed.x + circumscribed.width / 2;
+        const cropCenterY = circumscribed.y + circumscribed.height / 2;
+        const w = circumscribed.width;
+        const h = circumscribed.height;
+        const scaleMaxX = w > 0 ? Math.min(2 * cropCenterX / w, 2 * (imgNaturalW - cropCenterX) / w) : 1;
+        const scaleMaxY = h > 0 ? Math.min(2 * cropCenterY / h, 2 * (imgNaturalH - cropCenterY) / h) : 1;
+        const scaleMax = Math.max(1, Math.min(scaleMaxX, scaleMaxY));
+        let expanded = {
+          x: cropCenterX - (w * scaleMax) / 2,
+          y: cropCenterY - (h * scaleMax) / 2,
+          width: w * scaleMax,
+          height: h * scaleMax
+        };
+        expanded.y = cy - expanded.height / 3;
+        expanded.y = Math.max(0, Math.min(expanded.y, imgNaturalH - expanded.height));
+        return { name, crop: clampToImage(expanded) };
+      }
+
+      function expandCropByArrow(direction) {
+        if (!goldenCrop || !hasImage()) return;
+        let c = { x: goldenCrop.x, y: goldenCrop.y, width: goldenCrop.width, height: goldenCrop.height };
+        const stepY = c.height / PHI;
+        const stepX = c.width / PHI;
+        if (direction === 'ArrowUp') {
+          c.y = Math.max(0, c.y - stepY);
+          c.height = Math.min(imgNaturalH - c.y, c.height + stepY);
+        } else if (direction === 'ArrowDown') {
+          c.height = Math.min(imgNaturalH - c.y, c.height + stepY);
+        } else if (direction === 'ArrowLeft') {
+          c.x = Math.max(0, c.x - stepX);
+          c.width = Math.min(imgNaturalW - c.x, c.width + stepX);
+        } else if (direction === 'ArrowRight') {
+          c.width = Math.min(imgNaturalW - c.x, c.width + stepX);
+        }
+        goldenCrop = clampCropToImage(c);
+        goldenCropCoordsEl.textContent = formatCrop(goldenCrop);
+        const optX = Math.round(goldenCrop.x + goldenCrop.width / 2);
+        const optY = Math.round(goldenCrop.y + goldenCrop.height / 3);
+        optimalPositionEl.textContent = 'Upper-third point: (' + optX + ', ' + optY + ') — object centered here gives more space below than above';
+        draw();
+      }
+
+      function formatCrop(r) {
+        return 'x: ' + Math.round(r.x) + '  y: ' + Math.round(r.y) + '  width: ' + Math.round(r.width) + '  height: ' + Math.round(r.height);
+      }
+
+      function updateSelectionUI() {
+        const active = selection || (dragStart && dragStart.current);
+        clearSelectionBtn.disabled = !active;
+        goldenCrop = null;
+        goldenMatchEl.classList.add('hidden');
+
+        if (active) {
+          const r = selection || dragStart.current;
+          const px = Math.round(selection ? selection.x : r.x / scaleX);
+          const py = Math.round(selection ? selection.y : r.y / scaleY);
+          const pw = Math.round(selection ? selection.width : r.w / scaleX);
+          const ph = Math.round(selection ? selection.height : r.h / scaleY);
+          selectionInfo.textContent = 'Selection: x: ' + px + '  y: ' + py + '  width: ' + pw + '  height: ' + ph;
+          selectionInfo.classList.remove('empty');
+
+          if (selection && selection.width >= 2 && selection.height >= 2) {
+            const { name, crop } = goldenCropFromSelection(selection);
+            const cropClamped = clampCropToImage(crop);
+            const snappedSel = snapSelectionToGrid(selection, cropClamped);
+            goldenMatchText.innerHTML = 'Grid is calculated from your selection (golden mean in reverse). Selection snapped to grid; use arrows to expand crop.';
+            goldenCropCoordsEl.textContent = formatCrop(cropClamped);
+            selectionInfo.textContent = 'Selection (on grid): x: ' + Math.round(snappedSel.x) + '  y: ' + Math.round(snappedSel.y) + '  width: ' + Math.round(snappedSel.width) + '  height: ' + Math.round(snappedSel.height);
+            const optX = Math.round(cropClamped.x + cropClamped.width / 2);
+            const optY = Math.round(cropClamped.y + cropClamped.height / 3);
+            optimalPositionEl.textContent = 'Upper-third point: (' + optX + ', ' + optY + ') — object centered here gives more space below than above';
+            goldenMatchEl.classList.remove('hidden');
+            goldenCrop = cropClamped;
+          }
+        } else {
+          selectionInfo.textContent = 'No selection — drag on the image to select an area';
+          selectionInfo.classList.add('empty');
+        }
+        draw();
+      }
+
+      function displayImage(image) {
+        img = image;
+        imgNaturalW = image.naturalWidth;
+        imgNaturalH = image.naturalHeight;
+        const maxW = canvasWrap.clientWidth - 32;
+        const maxH = Math.min(500, window.innerHeight * 0.6);
+        const ratio = imgNaturalW / imgNaturalH;
+        if (imgNaturalW > maxW || imgNaturalH > maxH) {
+          if (ratio >= maxW / maxH) {
+            displayW = maxW;
+            displayH = Math.round(maxW / ratio);
+          } else {
+            displayH = maxH;
+            displayW = Math.round(maxH * ratio);
+          }
+        } else {
+          displayW = imgNaturalW;
+          displayH = imgNaturalH;
+        }
+        scaleX = displayW / imgNaturalW;
+        scaleY = displayH / imgNaturalH;
+        selection = null;
+        dragStart = null;
+        setCanvasWrapEmpty(false);
+        draw();
+        updateSelectionUI();
+      }
+
+      function toImageCoords(displayX, displayY) {
+        return {
+          x: (displayX / scaleX),
+          y: (displayY / scaleY)
+        };
+      }
+
+      function getEventPoint(e) {
+        const rect = canvas.getBoundingClientRect();
+        const dx = e.clientX - rect.left;
+        const dy = e.clientY - rect.top;
+        return { x: dx, y: dy };
+      }
+
+      fileInput.addEventListener('change', function () {
+        const file = fileInput.files && fileInput.files[0];
+        if (!file || !file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = function () {
+          const image = new Image();
+          image.onload = function () {
+            displayImage(image);
+          };
+          image.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      clearSelectionBtn.addEventListener('click', function () {
+        selection = null;
+        dragStart = null;
+        draw();
+        updateSelectionUI();
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(e.key) >= 0 && goldenCrop && hasImage()) {
+          expandCropByArrow(e.key);
+          e.preventDefault();
+        }
+      });
+
+      clearAllBtn.addEventListener('click', function () {
+        img = null;
+        goldenCrop = null;
+        selection = null;
+        dragStart = null;
+        fileInput.value = '';
+        cropMask.classList.remove('visible');
+        setCanvasWrapEmpty(true);
+        selectionInfo.textContent = 'No selection — drag on the image to select an area';
+        selectionInfo.classList.add('empty');
+        goldenMatchEl.classList.add('hidden');
+        clearSelectionBtn.disabled = true;
+        clearAllBtn.disabled = true;
+      });
+
+      canvas.addEventListener('mousedown', function (e) {
+        if (!hasImage()) return;
+        const p = getEventPoint(e);
+        if (p.x < 0 || p.y < 0 || p.x > displayW || p.y > displayH) return;
+        dragStart = {
+          x: p.x,
+          y: p.y,
+          current: { x: p.x, y: p.y, w: 0, h: 0 }
+        };
+      });
+
+      canvas.addEventListener('mousemove', function (e) {
+        if (!hasImage() || !dragStart) return;
+        const p = getEventPoint(e);
+        const x = Math.max(0, Math.min(displayW, p.x));
+        const y = Math.max(0, Math.min(displayH, p.y));
+        dragStart.current = {
+          x: Math.min(dragStart.x, x),
+          y: Math.min(dragStart.y, y),
+          w: Math.abs(x - dragStart.x),
+          h: Math.abs(y - dragStart.y)
+        };
+        draw();
+        updateSelectionUI();
+      });
+
+      canvas.addEventListener('mouseup', function () {
+        if (!hasImage() || !dragStart) return;
+        const r = dragStart.current;
+        if (r.w >= 2 && r.h >= 2) {
+          selection = {
+            x: r.x / scaleX,
+            y: r.y / scaleY,
+            width: r.w / scaleX,
+            height: r.h / scaleY
+          };
+        }
+        dragStart = null;
+        draw();
+        updateSelectionUI();
+      });
+
+      canvas.addEventListener('mouseleave', function () {
+        if (dragStart) {
+          const r = dragStart.current;
+          if (r.w >= 2 && r.h >= 2) {
+            selection = {
+              x: r.x / scaleX,
+              y: r.y / scaleY,
+              width: r.w / scaleX,
+              height: r.h / scaleY
+            };
+          }
+          dragStart = null;
+          draw();
+          updateSelectionUI();
+        }
+      });
+
+      window.addEventListener('resize', function () {
+        if (hasImage()) {
+          const maxW = canvasWrap.clientWidth - 32;
+          const maxH = Math.min(500, window.innerHeight * 0.6);
+          const ratio = imgNaturalW / imgNaturalH;
+          if (imgNaturalW > maxW || imgNaturalH > maxH) {
+            if (ratio >= maxW / maxH) {
+              displayW = maxW;
+              displayH = Math.round(maxW / ratio);
+            } else {
+              displayH = maxH;
+              displayW = Math.round(maxH * ratio);
+            }
+          } else {
+            displayW = imgNaturalW;
+            displayH = imgNaturalH;
+          }
+          scaleX = displayW / imgNaturalW;
+          scaleY = displayH / imgNaturalH;
+          draw();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
