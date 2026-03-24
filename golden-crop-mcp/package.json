@@ -1,0 +1,20 @@
+{
+  "name": "golden-crop-mcp",
+  "version": "1.0.0",
+  "description": "MCP server: golden crop from image size and object rectangle",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "golden-crop-mcp": "src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test test/goldenCrop.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  }
+}
