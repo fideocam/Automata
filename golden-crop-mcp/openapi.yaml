@@ -1,0 +1,192 @@
+swagger: '2.0'
+info:
+  title: Golden Crop API
+  description: |
+    Computes a golden-ratio crop around an object rectangle (same logic as golden-crop MCP).
+    Set `host` below to your deployed hostname only (e.g. `abc123.us-east-1.awsapprunner.com`), no `https://`.
+
+    When the server has `API_KEY` configured, send the key as header `X-API-Key` or `Authorization: Bearer <key>`.
+    If `API_KEY` is not set, requests are not authenticated. `GET /health` is always public.
+  version: 1.0.0
+
+# Copilot Studio / importers: replace with your public API host (App Runner, etc.)
+host: REPLACE_WITH_YOUR_API_HOST
+basePath: /
+schemes:
+  - https
+
+consumes:
+  - application/json
+produces:
+  - application/json
+
+securityDefinitions:
+  ApiKeyHeader:
+    type: apiKey
+    in: header
+    name: X-API-Key
+    description: Same value can be sent as Authorization Bearer token instead
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Used by load balancers and App Runner health checks.
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service is up
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: ok
+
+  /v1/golden-crop:
+    post:
+      summary: Compute golden crop
+      description: |
+        Returns matched golden type, circumscribed frame, maximized crop (upper-third bias),
+        object snapped to the crop φ-grid, grid line positions, and composition hint.
+      operationId: computeGoldenCrop
+      security:
+        - ApiKeyHeader: []
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/GoldenCropRequest'
+      responses:
+        '200':
+          description: Successful computation
+          schema:
+            $ref: '#/definitions/GoldenCropResponse'
+        '400':
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/ErrorBody'
+        '401':
+          description: Missing or invalid API key (when API_KEY is configured on the server)
+          schema:
+            $ref: '#/definitions/ErrorBody'
+
+definitions:
+  GoldenCropRequest:
+    type: object
+    required:
+      - imageWidth
+      - imageHeight
+      - object
+    properties:
+      imageWidth:
+        type: number
+        format: double
+        description: Natural image width in pixels
+        example: 1920
+      imageHeight:
+        type: number
+        format: double
+        description: Natural image height in pixels
+        example: 1080
+      object:
+        description: Bounding box of the subject in image pixel coordinates
+        $ref: '#/definitions/Rectangle'
+
+  Rectangle:
+    type: object
+    description: Axis-aligned rectangle in image pixel coordinates
+    required:
+      - x
+      - y
+      - width
+      - height
+    properties:
+      x:
+        type: number
+        format: double
+      y:
+        type: number
+        format: double
+      width:
+        type: number
+        format: double
+      height:
+        type: number
+        format: double
+
+  GoldenType:
+    type: object
+    properties:
+      id:
+        type: string
+        example: phix1
+      label:
+        type: string
+        example: φ×1 (portrait)
+
+  GridLines:
+    type: object
+    properties:
+      x:
+        type: array
+        items:
+          type: number
+          format: double
+      'y':
+        type: array
+        items:
+          type: number
+          format: double
+
+  GoldenCropResponse:
+    type: object
+    properties:
+      image:
+        $ref: '#/definitions/ImageSize'
+      object:
+        $ref: '#/definitions/Rectangle'
+        description: Object rectangle clamped to image bounds
+      matchedGoldenType:
+        $ref: '#/definitions/GoldenType'
+      circumscribedGoldenFrame:
+        $ref: '#/definitions/Rectangle'
+      crop:
+        $ref: '#/definitions/Rectangle'
+        description: Final crop rectangle in image space
+      objectSnappedToGrid:
+        $ref: '#/definitions/Rectangle'
+      upperThirdPoint:
+        $ref: '#/definitions/Point'
+        description: Suggested focal point (horizontal center, vertical upper third of crop)
+      gridLinesInImageSpace:
+        $ref: '#/definitions/GridLines'
+      phi:
+        type: number
+        format: double
+        description: Golden ratio φ
+
+  ImageSize:
+    type: object
+    properties:
+      width:
+        type: integer
+      height:
+        type: integer
+
+  Point:
+    type: object
+    properties:
+      x:
+        type: number
+        format: double
+      y:
+        type: number
+        format: double
+
+  ErrorBody:
+    type: object
+    properties:
+      error:
+        type: string

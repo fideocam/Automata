@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: ECR repository + IAM access role for App Runner to pull images (deploy first, push image, then deploy 02-apprunner-service)
+
+Parameters:
+  RepositoryName:
+    Type: String
+    Default: golden-crop-api
+    Description: ECR repository name for the golden-crop-api image
+
+Resources:
+  Repository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Ref RepositoryName
+      ImageScanningConfiguration:
+        scanOnPush: true
+      EncryptionConfiguration:
+        EncryptionType: AES256
+
+  AppRunnerEcrAccessRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: build.apprunner.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess
+
+Outputs:
+  RepositoryUri:
+    Description: ECR repository URI without tag (docker push target base)
+    Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Repository}
+    Export:
+      Name: !Sub ${AWS::StackName}-RepositoryUri
+
+  RepositoryNameOut:
+    Value: !Ref Repository
+    Export:
+      Name: !Sub ${AWS::StackName}-RepositoryName
+
+  AppRunnerEcrAccessRoleArn:
+    Description: Pass to App Runner service stack (IAM console also shows this)
+    Value: !GetAtt AppRunnerEcrAccessRole.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-AppRunnerEcrAccessRoleArn
+
+  DockerLoginHint:
+    Description: Run in shell to authenticate Docker to this account/region
+    Value: !Sub aws ecr get-login-password --region ${AWS::Region} | docker login --username AWS --password-stdin ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com

@@ -9,6 +9,7 @@
   },
   "scripts": {
     "start": "node src/index.js",
+    "start:http": "node src/server.js",
     "test": "node --test test/goldenCrop.test.js"
   },
   "engines": {

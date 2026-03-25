@@ -1,0 +1,100 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: App Runner service for golden-crop HTTP API (deploy after image exists in ECR)
+
+Parameters:
+  EcrStackName:
+    Type: String
+    Default: golden-crop-ecr
+    Description: Name of the stack created from 01-ecr-and-access-role.yaml (used for Fn::ImportValue)
+
+  ImageTag:
+    Type: String
+    Default: latest
+    Description: Image tag pushed to ECR
+
+  ServiceName:
+    Type: String
+    Default: golden-crop-api
+
+  Cpu:
+    Type: String
+    Default: '0.25 vCPU'
+    AllowedValues:
+      - '0.25 vCPU'
+      - '0.5 vCPU'
+      - '1 vCPU'
+      - '2 vCPU'
+      - '4 vCPU'
+
+  Memory:
+    Type: String
+    Default: '0.5 GB'
+    AllowedValues:
+      - '0.5 GB'
+      - '1 GB'
+      - '2 GB'
+      - '3 GB'
+      - '4 GB'
+
+  CORSOrigins:
+    Type: String
+    Default: ''
+    Description: Optional. Comma-separated allowed Origin values for browser clients, or * (empty disables CORS headers)
+
+  ApiKey:
+    Type: String
+    NoEcho: true
+    Default: ''
+    Description: Optional. Sets API_KEY for HTTP auth (X-API-Key or Bearer). Empty = no API key required
+
+Resources:
+  AppRunnerService:
+    Type: AWS::AppRunner::Service
+    Properties:
+      ServiceName: !Ref ServiceName
+      SourceConfiguration:
+        AutoDeploymentsEnabled: false
+        AuthenticationConfiguration:
+          AccessRoleArn:
+            Fn::ImportValue: !Sub ${EcrStackName}-AppRunnerEcrAccessRoleArn
+        ImageRepository:
+          ImageIdentifier:
+            Fn::Join:
+              - ':'
+              - - Fn::ImportValue: !Sub ${EcrStackName}-RepositoryUri
+                - !Ref ImageTag
+          ImageConfiguration:
+            Port: '8080'
+            RuntimeEnvironmentVariables:
+              - Name: NODE_ENV
+                Value: production
+              - Name: PORT
+                Value: '8080'
+              - Name: CORS_ORIGINS
+                Value: !Ref CORSOrigins
+              - Name: API_KEY
+                Value: !Ref ApiKey
+      InstanceConfiguration:
+        Cpu: !Ref Cpu
+        Memory: !Ref Memory
+      HealthCheckConfiguration:
+        Protocol: HTTP
+        Path: /health
+        Interval: 10
+        Timeout: 5
+        HealthyThreshold: 1
+        UnhealthyThreshold: 5
+
+Outputs:
+  ServiceUrl:
+    Description: HTTPS URL of the App Runner service
+    Value: !GetAtt AppRunnerService.ServiceUrl
+
+  ServiceArn:
+    Value: !GetAtt AppRunnerService.ServiceArn
+
+  PostExample:
+    Description: Example curl for /v1/golden-crop
+    Value: !Sub
+      - curl -sS -X POST https://${Host}/v1/golden-crop -H 'Content-Type: application/json' -d '{"imageWidth":1920,"imageHeight":1080,"object":{"x":100,"y":100,"width":400,"height":300}}'
+      - Host: !GetAtt AppRunnerService.ServiceUrl
